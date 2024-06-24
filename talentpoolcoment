@@ -1,0 +1,76 @@
+// ==UserScript==
+// @name         [SPINNIN RECORDS] AUTO COMMENT
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Automatically comments on songs and navigates back to the song list (Talent Pool Spam)
+// @author       peppahacker
+// @match        https://spinninrecords.com/talentpool/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+    document.addEventListener('DOMContentLoaded', function() {
+        commentOnSongs();
+    });
+
+    function commentOnSongs(index = 0) {
+        console.log("Starting the script...");
+
+        const songTitles = document.querySelectorAll('.song-title > a.SpinninInternalLink');
+        if (index >= songTitles.length) {
+            console.log("No more songs to comment on.");
+            return;
+        }
+
+        console.log(`Processing song title ${index + 1} of ${songTitles.length}: ${songTitles[index].innerText}`);
+
+        const songName = songTitles[index].innerText.toLowerCase();
+
+        songTitles[index].click();
+
+        setTimeout(() => {
+            console.log("Navigated to the song page.");
+
+            const commentTextarea = document.querySelector('#comment');
+            if (!commentTextarea) {
+                console.log("Comment textarea not found.");
+
+                window.history.back();
+                setTimeout(() => commentOnSongs(index + 1), 2000);
+                return;
+            }
+
+            console.log("Found comment textarea.");
+
+            commentTextarea.value = `Nice song ${songName}, vote for my song, big thank!`;
+            console.log("Typed the comment:", commentTextarea.value);
+
+            const submitButton = document.querySelector('.submit_button');
+            if (!submitButton) {
+                console.log("Submit button not found.");
+                window.history.back();
+                setTimeout(() => commentOnSongs(index + 1), 2000);
+                return;
+            }
+
+            console.log("Found submit button.");
+
+            submitButton.click();
+            console.log("Clicked submit button.");
+
+            setTimeout(() => {
+                console.log("Comment submitted, navigating back.");
+                window.history.back();
+
+                setTimeout(() => {
+                    console.log("Navigated back to the song list.");
+                    commentOnSongs(index + 1);
+                }, 2000); // Adjust the delay
+            }, 2000); // Adjust the delay as needed to ensure the comment is submitted
+        }, 3000); // Adjust the delay as needed to ensure the page has fully loaded
+    }
+
+    commentOnSongs();
+
+})();
